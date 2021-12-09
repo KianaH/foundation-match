@@ -6,10 +6,13 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
 func main() {
 	addr := flag.String("addr", "localhost:3000", "HTTP network address")
+
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
@@ -22,14 +25,16 @@ func main() {
 
 	defer db.Close()
 
+	r := routes
+
 	infoLog.Printf("Starting server on %s", *addr)
-	err = http.ListenAndServe()
+	err = http.ListenAndServe("127.0.0.1:4000", r)
 	errorLog.Fatal(err)
 
 }
 
 func openDB() (*sql.DB, error) {
-	db, err := sql.Open(DB_STRING)
+	db, err := sql.Open("pgx", os.Getenv(DB_URI))
 	if err != nil {
 		return nil, err
 	}
